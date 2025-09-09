@@ -1,0 +1,138 @@
+/* =========================
+   Variables (ajustables)
+   ========================= */
+:root {
+  --thumbs-h: 18svh;     /* alto de la tira de thumbnails */
+  --radius: 8px;         /* redondeado de las imágenes */
+  --gutter: 12px;        /* separación vertical total entre sliders */
+}
+
+/* Fallback si no hay svh */
+@supports not (height: 1svh) {
+  :root { --thumbs-h: 18vh; }
+}
+
+/* =========================
+   Swiper principal (mySwiper2)
+   ========================= */
+.mySwiper2.swiper {
+  width: 100%;
+  /* Altura controlada: nunca gigante, pero usa viewport cuando puede.
+     - min: 320px
+     - preferido: 100svh - thumbs - gutter
+     - max: 78vh (para no ocupar todo en pantallas muy grandes) */
+  height: clamp(320px, calc(100svh - var(--thumbs-h) - var(--gutter)), 78vh);
+  height: clamp(320px, calc(100vh - var(--thumbs-h) - var(--gutter)), 78vh); /* fallback */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mySwiper2 .swiper-wrapper,
+.mySwiper2 .swiper-slide {
+  height: 100%;
+}
+
+.mySwiper2 .swiper-slide {
+  display: flex;                 /* centraremos con flex */
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;              /* evita desbordes */
+  background-size: cover;
+  background-position: center;
+}
+
+/* Imagen: que entre completa sin recorte, centrada y con borde redondeado */
+.mySwiper2 .swiper-slide img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;                   /* mantiene proporción */
+  height: auto;                  /* mantiene proporción */
+  object-fit: contain !important;/* anula object-fill/cover que vengan del componente */
+  display: block;
+  border-radius: var(--radius);
+}
+
+/* =========================
+   Thumbnails (mySwiper)
+   ========================= */
+.mySwiper {
+  width: 100%;
+  /* Altura fija relativa al viewport, cómoda para click/touch */
+  height: clamp(96px, var(--thumbs-h), 240px);
+  box-sizing: border-box;
+  padding: 10px 0;
+  margin-top: var(--gutter);
+}
+
+.mySwiper .swiper-wrapper,
+.mySwiper .swiper-slide {
+  height: 100%;
+}
+
+.mySwiper .swiper-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+  overflow: hidden;
+}
+
+.mySwiper .swiper-slide-thumb-active {
+  opacity: 1;
+}
+
+/* Miniaturas completas y con leve redondeado */
+.mySwiper .swiper-slide img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain !important;
+  display: block;
+  border-radius: calc(var(--radius) * 0.75);
+}
+
+/* =========================
+   Limpieza de reglas globales previas
+   ========================= */
+/* Evita que otras reglas de tu proyecto impongan cover/100% height */
+.swiper {
+  height: auto; /* el .mySwiper2 ya define su altura con clamp */
+}
+
+.swiper-slide img {
+  object-fit: contain !important;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+/* =========================
+   Ajustes responsivos
+   ========================= */
+@media (max-width: 768px) {
+  :root { --thumbs-h: 24svh; }
+  @supports not (height: 1svh) {
+    :root { --thumbs-h: 24vh; }
+  }
+  .mySwiper2.swiper {
+    /* en mobile, permitimos que ocupe un poco más alto si hace falta */
+    height: clamp(260px, calc(100svh - var(--thumbs-h) - var(--gutter)), 84vh);
+    height: clamp(260px, calc(100vh - var(--thumbs-h) - var(--gutter)), 84vh);
+  }
+}
+
+@media (min-width: 1600px) {
+  /* en pantallas muy grandes, achicamos un poco los thumbs
+     y limitamos aún más el principal */
+  :root { --thumbs-h: 14svh; }
+  @supports not (height: 1svh) {
+    :root { --thumbs-h: 14vh; }
+  }
+  .mySwiper2.swiper {
+    height: clamp(360px, calc(100svh - var(--thumbs-h) - var(--gutter)), 70vh);
+    height: clamp(360px, calc(100vh - var(--thumbs-h) - var(--gutter)), 70vh);
+  }
+}
