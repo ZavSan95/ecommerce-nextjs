@@ -7,9 +7,15 @@ interface State{
     cart: CartProduct[]
 
     getTotalItems: () => number;
+    getSummaryInformation: () =>  {
+        subTotal: number;
+        tax: number;
+        total: number;
+        ItemsInCart: number;
+    };
     addProductToCart: (product: CartProduct) => void;
-    // updateProductQuantity
-    // removeProductFromCart
+    updateProductQuantity: (product: CartProduct, quantity: number) => void;
+    removeProductFromCart: (product: CartProduct) => void;
 }
 
 export const useCartStore = create<State>()(
@@ -23,6 +29,21 @@ export const useCartStore = create<State>()(
             getTotalItems: () => {
                 const { cart } = get();
                 return cart.reduce( (total, item) => total + item.quantity, 0 );
+            },
+
+            getSummaryInformation: () => {
+                const { cart } = get();
+
+                const subTotal = cart.reduce(
+                    (subtotal, producto) => 
+                        (producto.quantity*producto.price) + subtotal, 0);
+                const tax = 0;
+                const total = subTotal + tax;
+                const ItemsInCart = cart.reduce((total,item) => total + item.quantity, 0);
+
+                return {
+                    subTotal, tax, total, ItemsInCart
+                }
             },
 
             addProductToCart: (product: CartProduct) => {
@@ -48,6 +69,30 @@ export const useCartStore = create<State>()(
                 });
 
                 set({ cart: updateCartProducts });
+            },
+
+            updateProductQuantity(product: CartProduct, quantity: number){
+
+                const { cart } = get();
+                
+                const updatedCartProducts = cart.map( item => {
+                    if(item.id === product.id && item.size === product.size){
+                        return{...item, quantity: quantity};
+                    }
+                    return item;
+                });
+
+                set({cart: updatedCartProducts});
+            },
+
+            removeProductFromCart(product: CartProduct){
+                
+                const { cart } = get();
+
+                const updatedCartProducts = cart.filter( (item) => 
+                item.id !== product.id || item.size !== product.size);
+
+                set({cart: updatedCartProducts});
             }
 
         })
