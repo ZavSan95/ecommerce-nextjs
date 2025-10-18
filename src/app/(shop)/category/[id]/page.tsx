@@ -1,42 +1,44 @@
-import { initialData } from '@/seed/seed';
 import { ProductGrid, Title } from '@/components';
 import { notFound } from "next/navigation";
-import { Category } from '@/interfaces';
 
 interface Props {
-  params: Promise<{id: Category}>
+  params: Promise<{ id: string }>;
 }
 
-export default async function ({ params }: Props) {
+async function getProductsByCategory(slug: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/api/products?category=${slug}`, {
+    cache: 'no-store',
+  });
 
-  const products = initialData.products;
-
-  const { id } = await params;
-
-  const labels: Record<Category, string> = {
-    'men' : 'Hombres',
-    'women' : 'Mujeres',
-    'kid' : 'Niños',
-    'unisex' : 'Todos'
+  if (!res.ok) {
+    console.error('Error al obtener productos por categoría');
+    notFound();
   }
 
-  // Filtrar los productos por el gender recibido en la URL
-  const filteredProducts = products.filter(product => product.gender === id);
+  const response = await res.json();
+  const products = response.data || response.products || [];
 
-  // Si no hay productos para ese id, mostrar 404
-  if (filteredProducts.length === 0) {
+  return products;
+}
+
+export default async function CategoryPage({ params }: Props) {
+  const { id } = await params; // ✅ ahora esperamos la Promise
+
+  const products = await getProductsByCategory(id);
+
+  if (products.length === 0) {
     notFound();
   }
 
   return (
     <>
       <Title 
-        title='Tienda'
-        subtitle={`Productos para ${labels[id]}`}
-        className='mb-2'    
+        title="Tienda"
+        subtitle={`Productos en ${id.charAt(0).toUpperCase() + id.slice(1)}`}
+        className="mb-2"
       />
 
-      <ProductGrid products={filteredProducts}/>
+      <ProductGrid products={products} />
     </>
   );
 }

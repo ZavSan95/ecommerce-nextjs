@@ -1,41 +1,48 @@
 'use client';
 
-import { Product } from "@/interfaces"
+import { Product } from "@/interfaces";
 import Image from 'next/image';
 import Link from "next/link";
 import { useState } from "react";
 
 interface Props {
-    product: Product;
+  product: Product;
 }
 
-export const ProductGridItem = ({ product } : Props ) => {
+export const ProductGridItem = ({ product }: Props) => {
 
-  const [displayImage, setDisplayImage] = useState(product.images[0]);
+  const [displayImage, setDisplayImage] = useState(product.images?.[0] || '/no-image.png');
+
+  // Si las imágenes son URLs completas, las usamos tal cual
+  const imageSrc = (src: string) =>
+    src.startsWith('http') ? src : `/products/${src}`;
 
   return (
     <div className="rounded-md overflow-hidden fade-in">
-        <Link href={`/product/${product.slug}`}>
-          <Image 
-              src={`/products/${displayImage}`}
-              alt={product.title}
-              className="w-full object-cover rounded"
-              width={500}
-              height={500}
-              loading="lazy"
-              onMouseEnter={ () => setDisplayImage(product.images[1]) }
-              onMouseLeave={ () => setDisplayImage(product.images[0]) }
-          />
+      <Link href={`/product/${product.slug}`}>
+        <Image
+          src={imageSrc(displayImage)}
+          alt={product.title}
+          className="w-full object-cover rounded"
+          width={500}
+          height={500}
+          loading="lazy"
+          onMouseEnter={() => product.images?.[1] && setDisplayImage(product.images[1])}
+          onMouseLeave={() => product.images?.[0] && setDisplayImage(product.images[0])}
+        />
+      </Link>
+
+      <div className="p-4 flex flex-col">
+        <Link href={`/product/${product.slug}`} className="hover:text-blue-600 font-medium">
+          {product.title}
         </Link>
 
-        <div className="p-4 flex flex-col">
+        {product.category && (
+          <span className="text-sm text-gray-500">{product.category.name}</span>
+        )}
 
-          <Link href={`/product/${product.slug}`} className="hover:text-blue-600">
-            {product.title}
-          </Link>
-
-          <span className="font-bold">${product.price}</span>
-        </div>
+        <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
+      </div>
     </div>
-  )
-}
+  );
+};

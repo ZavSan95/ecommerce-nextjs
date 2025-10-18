@@ -1,6 +1,5 @@
-import { ProductSlideshow, QuantitySelector, SizeSelector } from "@/components";
+import { ProductSlideshow } from "@/components";
 import { titleFont } from "@/config/fonts";
-import { initialData } from "@/seed/seed";
 import { notFound } from "next/navigation";
 import { AddToCart } from "./ui/AddToCart";
 
@@ -8,15 +7,28 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+async function getProduct(slug: string) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/api/products/slug/${slug}`,
+      { cache: 'no-store' }
+    );
+
+    if (!res.ok) throw new Error('Error al cargar producto');
+    return await res.json();
+  } catch (error) {
+    console.error('❌ Error al obtener producto:', error);
+    return null;
+  }
+}
 
 
-export default async function ({params}: Props) {
-
+export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
-  const product = initialData.products.find(product => product.slug === slug );
+  const product = await getProduct(slug);
 
-  if( !product ){
-    notFound(); 
+  if (!product) {
+    notFound();
   }
 
   return (
@@ -30,24 +42,21 @@ export default async function ({params}: Props) {
         />
       </div>
 
-            {/* Detalles */ }
+      {/* Detalles */}
       <div className="col-span-1 px-5">
 
-        <h1 className={ ` ${ titleFont.className } antialiased font-bold text-xl` }>
-          { product.title }
+        <h1 className={`${titleFont.className} antialiased font-bold text-xl`}>
+          {product.title}
         </h1>
-        <p className="text-lg mb-5">${ product.price }</p>
+        <p className="text-lg mb-5">${product.price}</p>
 
-        <AddToCart product={product}/>
+        <AddToCart product={product} />
 
-        {/* Descripción */ }
-        <h3 className="font-bold text-sm">Descripción</h3>
-        <p className="font-light">
-          { product.description }
-        </p>
+        {/* Descripción */}
+        <h3 className="font-bold text-sm mt-6">Descripción</h3>
+        <p className="font-light">{product.description}</p>
 
       </div>
-
     </div>
   );
 }
